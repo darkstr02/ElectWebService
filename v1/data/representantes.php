@@ -16,12 +16,15 @@ class representantes
 	const ESTADO_CREACION_EXITOSA = 1;
 	const ESTADO_CREACION_FALLIDA = 2;
 	const ESTADO_FALLA_DESCONOCIDA = 3;
-
+	const ESTADO_PARAMETROS_INCORRECTOS = 4;
 
 	public static function post($peticion)
 	{
-			if($peticion[0] = 'insertar') {
-			return self::insertar();
+			if($peticion[0] == 'insertar') {
+				//var_dump($peticion);
+				return self::insertar();
+			} else if ($peticion[0] == 'login') {
+				return self::login();
 			} else {
 				throw new ExceptionAPI(self::ESTADO_URL_INCORRECTA, "Url mal formado",400);
 			}
@@ -34,6 +37,7 @@ class representantes
 		//	"rep_general":" "
 		//	"contrasena":" "
 		//}
+
 
 	private function insertar()
 	{
@@ -59,7 +63,6 @@ class representantes
 			default:
 				throw new ExceptionAPI(self::ESTADO_FALLA_DESCONOCIDA,"Falla desconocida",400);
 		}
-		//Continuara
 	}
 	
 	private function crear($datosRepresentante)
@@ -109,7 +112,42 @@ class representantes
 		}
 
 	}
-	
+
+	private function login()
+	{
+		$respuesta = array();
+		$body = file_get_contents('php://input');
+		$usuario = json_decode($body);
+
+		$nombre = $usuario->nombre;
+		$contrasena = $usuario->contrasena;
+
+		if(self::autenticar($nombre,$contrasena)) {
+
+			$usuarioBD = self::obtenerUsuarioPorNombre($nombre);
+			if($usuarioBD != NULL)
+			{
+				http_response_code(200);
+				$respuesta["ap_paterno"] = $usuarioBD["ap_paterno"];
+				$respuesta["ap_materno"] = $usuarioBD["ap_materno"];
+				$respuesta["nombre"] = $usuarioBD["nombre"];
+				$respuesta["rep_general"] = $usuarioBD["rep_general"];
+				$respuesta["api_key"] = $usuarioBD["api_key"];
+
+				return ["estado" => 1, "usuario" => $respuesta];
+			} else { 
+				throw new ExceptionAPI(self::ESTADO_FALLA_DESCONOCIDA, "Ha ocurrido un error");
+			}
+		} else {
+			throw new ExceptionAPI(self::ESTADO_PARAMETROS_INCORRECTOS,
+				utf8_encode("Correo o contraseña inválidos"));
+		}
+
+	}
+
+
+
+
 	private function generarClaveAPI()
 	{
 		return md5(microtime().rand());
@@ -123,6 +161,59 @@ class representantes
 			return null;
 	}
 
+	private function autenticar($nombre, $contrasena)
+	{
+		$comando = "SELECT contrasena FROM " . self::NOMBRE_TABLA .
+			" WHERE " . self::NOMBRE . " = ?";
+
+		try
+		{
+			$sentencia = ConexionBD::obtenerInstancia()->obtenerBD()->prepare($comando);
+			$sentencia->bindParam(1,$nombre);
+			$sentencia->execute();
+
+			if($sentencia)
+			{
+				$resultado = $sentencia->fetch();
+				//var_dump($resultado);
+				if(self::validarContrasena($contrasena,$resultado['contrasena']))
+					return true;
+				else
+					return false;
+			}
+			else
+				return false;
+
+		} catch (PDOException $e) {
+			throw new ExceptionAPI(self::ESTADO_ERROR_BD, $e->getMessage());
+		}
+
+	}
+
+	private function validarContrasena($contrasenaPlana, $contrasenaHash)
+	{
+		return password_verify($contrasenaPlana, $contrasenaHash);
+	}
+
+	private function obtenerUsuarioPorNombre($nombre)
+	{
+		$comando = "SELECT " .
+			self::AP_PATERNO . "," .
+			self::AP_MATERNO . "," .
+			self::NOMBRE . "," .
+			self::REP_GENERAL . "," .
+			SELF::API_KEY .
+			" FROM " . self::NOMBRE_TABLA .
+			" WHERE " . self::NOMBRE . "=?";
+
+		$sentencia = ConexionBD::obtenerInstancia()->obtenerBD()->prepare($comando);
+		$sentencia->bindParam(1,$nombre);
+
+		if($sentencia->execute())
+			return $sentencia->fetch(PDO::FETCH_ASSOC);
+		else
+			return null;
+	}
 }
 
 

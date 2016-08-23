@@ -55,7 +55,8 @@
 			//Procesar método get;
 			break;
 		case 'post':
-			//;
+			//var_dump($recurso);
+			//var_dump($metodo);
 			//var_dump($peticion);
 			if(method_exists($recurso,$metodo))
 			{	
