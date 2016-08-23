@@ -1,0 +1,17 @@
+<?php
+
+class ExcepcionAPI extends Exception
+{
+	public $estado;
+	
+	public function __construct($estado,$mensaje,$codigo=400)
+	{
+		$this->estado = $estado;
+		$this->mensaje = $mensaje;
+		$this->code = $codigo;
+	}
+
+
+}
+
+?>

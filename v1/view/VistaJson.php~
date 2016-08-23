@@ -1,0 +1,21 @@
+<?php
+
+	require_once "VistaAPI.php";
+	
+	//Clase para imprimir en la salida respuestas con formato JSON;
+	class VistaJson extends VistaAPI
+	{
+		public function __construct($estado = 400)
+		{
+			$this->estado = $estado;
+		}
+		
+		//Imprime el cuerpo de la respuesta y asigna el código de respuesta
+		//@param mixed $cuerpo de la respuesta a enviar
+		
+		
+	
+	
+	}
+
+?>
