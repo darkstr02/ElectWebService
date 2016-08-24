@@ -39,7 +39,7 @@ class representantes
 		//}
 
 
-	private function insertar()
+	private static function insertar()
 	{
 		$cuerpo = file_get_contents('php://input');
 		$usuario = json_decode($cuerpo);
@@ -65,7 +65,7 @@ class representantes
 		}
 	}
 	
-	private function crear($datosRepresentante)
+	private static function crear($datosRepresentante)
 	{
 
 		//var_dump($datosRepresentante);
@@ -113,7 +113,7 @@ class representantes
 
 	}
 
-	private function login()
+	private static function login()
 	{
 		$respuesta = array();
 		$body = file_get_contents('php://input');
@@ -148,12 +148,12 @@ class representantes
 
 
 
-	private function generarClaveAPI()
+	private static function generarClaveAPI()
 	{
 		return md5(microtime().rand());
 	}
 
-	private function encriptarContrasena($contrasenaPlana)
+	private static function encriptarContrasena($contrasenaPlana)
 	{
 		if($contrasenaPlana)
 			return password_hash($contrasenaPlana, PASSWORD_DEFAULT);
@@ -161,7 +161,7 @@ class representantes
 			return null;
 	}
 
-	private function autenticar($nombre, $contrasena)
+	private static function autenticar($nombre, $contrasena)
 	{
 		$comando = "SELECT contrasena FROM " . self::NOMBRE_TABLA .
 			" WHERE " . self::NOMBRE . " = ?";
@@ -190,12 +190,12 @@ class representantes
 
 	}
 
-	private function validarContrasena($contrasenaPlana, $contrasenaHash)
+	private static function validarContrasena($contrasenaPlana, $contrasenaHash)
 	{
 		return password_verify($contrasenaPlana, $contrasenaHash);
 	}
 
-	private function obtenerUsuarioPorNombre($nombre)
+	private static function obtenerUsuarioPorNombre($nombre)
 	{
 		$comando = "SELECT " .
 			self::AP_PATERNO . "," .
