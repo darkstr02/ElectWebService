@@ -1,22 +1,26 @@
 <?php
 
+
+
 class representantes
 {
 
 
-	const NOMBRE_TABLA = "REPRESENTANTES";
-	const ID_REPRESENTANTE = "id";
-	const AP_PATERNO = "ap_paterno";
-	const AP_MATERNO = "ap_materno";
-	const NOMBRE = "nombre";
-	const REP_GENERAL = "rep_general";
-	const CONTRASENA = "contrasena";
-	const API_KEY = "api_key";
+	const NOMBRE_TABLA 	= "REPRESENTANTES";
+	const ID_REPRESENTANTE 	= "id";
+	const AP_PATERNO 	= "ap_paterno";
+	const AP_MATERNO 	= "ap_materno";
+	const NOMBRE 		= "nombre";
+	const REP_GENERAL 	= "rep_general";
+	const CONTRASENA 	= "contrasena";
+	const API_KEY 		= "api_key";
 	
 	const ESTADO_CREACION_EXITOSA = 1;
 	const ESTADO_CREACION_FALLIDA = 2;
 	const ESTADO_FALLA_DESCONOCIDA = 3;
 	const ESTADO_PARAMETROS_INCORRECTOS = 4;
+	const ESTADO_CLAVE_NO_AUTORIZADA = 5;
+ 	const ESTADO_AUSENCIA_CLAVE_API = 6;
 
 	public static function post($peticion)
 	{
@@ -30,6 +34,8 @@ class representantes
 			}
 
 	}
+
+		// ESTRUCTURA DEL CUERPO JSON PARA REGISTRAR NUEVO REPRESENTANTE (PROVISIONAL)
 		//{
 		//	"ap_paterno":" "
 		//	"ap_materno":" "
@@ -43,7 +49,7 @@ class representantes
 	{
 		$cuerpo = file_get_contents('php://input');
 		$usuario = json_decode($cuerpo);
-		
+
 		$resultado = self::crear($usuario);
 
 		switch($resultado)
@@ -145,9 +151,6 @@ class representantes
 
 	}
 
-
-
-
 	private static function generarClaveAPI()
 	{
 		return md5(microtime().rand());
@@ -214,6 +217,63 @@ class representantes
 		else
 			return null;
 	}
+
+
+	//Funciones de Autenticación por Clave API.
+
+	public static function autorizar()
+	{
+		$cabeceras = apache_request_headers();
+
+		var_dump($cabeceras);
+
+		if(isset($cabeceras["authorization"])) {
+
+			$claveAPI = $cabeceras["authorization"];
+
+			if(representantes::validarClaveApi($claveAPI)) {
+				return representantes::obtenerIdUsuario($claveAPI);
+			} else {
+				throw new ExceptionAPI(self::ESTADO_CLAVE_NO_AUTORIZADA, "Clave API no autorizada",401);
+			}
+		} else {
+
+			throw new ExceptionAPI (self::ESTADO_AUSENCIA_CLAVE_API,utf8_encode("Se requiere Clave API para autenticación"));
+
+		}
+	}
+
+	private function validarClaveApi($claveAPI)
+	{
+		$comand = "SELECT COUNT(" . self::ID_REPRESENTANTE . ")" .
+			" FROM " . self::NOMBRE_TABLA .
+			" WHERE " . self::CLAVE_API . "=?";
+
+		$sentencia = ConexionBD::obtenerInstancia()->obtenerBD()->prepare($comando);
+		$sentencia->bindParam(1,$claveAPI);
+		$sentencia->execute();
+
+		return $sentencia->fetchColumn(0) > 0;
+	}
+
+	private function obtenerIdUsuario($claveAPI)
+	{
+		$comando = "SELECT " . self::ID_USUARIO .
+			" FROM " . self::NOMBRE_TABLA .
+			" WHERE " . self::CLAVE_API . "=?";
+
+		$sentencia = ConexionBD::obtenerInstancia()->obtenerBD()->prepare($comando);
+		$sentencia->bindParam(1,$claveAPI);
+
+		if($sentencia->execute()) {
+			$resultado = $sentencia->fetch();
+			return $resultado['id'];
+		} else
+			return null;
+	}
+
+
+
 }
 
 

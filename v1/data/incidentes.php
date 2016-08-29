@@ -35,7 +35,6 @@ class incidentes
 		Estructura de la Peticion JSON:
 		{
 			"id_casilla":" "
-			"id_representante":" "
 			"comentarios":" "
 			"fotografia":" "
 			"ubicacion":" "
@@ -77,7 +76,8 @@ class incidentes
 		var_dump($datosIncidente);
 		//$id_incidente = $datosIncidente->id;
 		$id_casilla = $datosIncidente->id_casilla;
-		$id_representante = $datosIncidente->id_representante;
+		//$id_representante = $datosIncidente->id_representante;
+		$id_representante = representantes::autorizar();
 		$comentarios = $datosIncidente->comentarios;
 		$fotografia = $datosIncidente->fotografia;
 		$ubicacion = $datosIncidente->ubicacion;
