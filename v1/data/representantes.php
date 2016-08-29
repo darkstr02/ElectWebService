@@ -225,7 +225,7 @@ class representantes
 	{
 		$cabeceras = apache_request_headers();
 
-		var_dump($cabeceras);
+		//var_dump($cabeceras);
 
 		if(isset($cabeceras["authorization"])) {
 
@@ -245,9 +245,9 @@ class representantes
 
 	private function validarClaveApi($claveAPI)
 	{
-		$comand = "SELECT COUNT(" . self::ID_REPRESENTANTE . ")" .
+		$comando = "SELECT COUNT(" . self::ID_REPRESENTANTE . ")" .
 			" FROM " . self::NOMBRE_TABLA .
-			" WHERE " . self::CLAVE_API . "=?";
+			" WHERE " . self::API_KEY . "=?";
 
 		$sentencia = ConexionBD::obtenerInstancia()->obtenerBD()->prepare($comando);
 		$sentencia->bindParam(1,$claveAPI);
@@ -258,9 +258,9 @@ class representantes
 
 	private function obtenerIdUsuario($claveAPI)
 	{
-		$comando = "SELECT " . self::ID_USUARIO .
+		$comando = "SELECT " . self::ID_REPRESENTANTE .
 			" FROM " . self::NOMBRE_TABLA .
-			" WHERE " . self::CLAVE_API . "=?";
+			" WHERE " . self::API_KEY . "=?";
 
 		$sentencia = ConexionBD::obtenerInstancia()->obtenerBD()->prepare($comando);
 		$sentencia->bindParam(1,$claveAPI);
@@ -271,8 +271,6 @@ class representantes
 		} else
 			return null;
 	}
-
-
 
 }
 

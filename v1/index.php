@@ -64,6 +64,7 @@
 			if(method_exists($recurso,$metodo))
 			{
 				$respuesta = call_user_func(array($recurso,$metodo),$peticion);
+				$vista->estado = http_response_code();
 				$vista->imprimir($respuesta);
 				break;
 			}
